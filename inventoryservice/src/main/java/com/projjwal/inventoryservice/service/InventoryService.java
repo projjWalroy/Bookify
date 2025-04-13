@@ -8,6 +8,7 @@ import com.projjwal.inventoryservice.response.VenueInventoryResponse;
 
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import com.projjwal.inventoryservice.entity.Event;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 public class InventoryService {
 
@@ -41,6 +42,7 @@ public class InventoryService {
     }
 
     public VenueInventoryResponse getVenueInformation(final Long venueId) {
+
         final Venue venue = venueRepository.findById(venueId).orElse(null);
 
         return VenueInventoryResponse.builder()
@@ -49,4 +51,24 @@ public class InventoryService {
                 .totalCapacity(venue.getTotalCapacity())
                 .build();
     }
+
+    public EventInventoryResponse getEventInventory(final Long eventId) {
+        final Event event = eventRepository.findById(eventId).orElse(null);
+
+        return EventInventoryResponse.builder()
+                .event(event.getName())
+                .capacity(event.getLeftCapacity())
+                .venue(event.getVenue())
+                .ticketPrice(event.getTicketPrice())
+                .eventId(event.getId())
+                .build();
+    }
+
+    public void updateEventCapacity(final Long eventId, final Long ticketsBooked) {
+        final Event event = eventRepository.findById(eventId).orElse(null);
+        event.setLeftCapacity(event.getLeftCapacity() - ticketsBooked);
+        eventRepository.saveAndFlush(event);
+        log.info("Updated event capacity for event id: {} with tickets booked: {}", eventId, ticketsBooked);
+    }
+
 }
